@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class RekodaActivity extends Activity {
@@ -51,7 +52,6 @@ public class RekodaActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).mkdirs();
 		//
 		// PowerManager pm =
 		// (PowerManager)getSystemService(Context.POWER_SERVICE);
@@ -94,9 +94,7 @@ public class RekodaActivity extends Activity {
 			recorder.setProfile(cpHigh);
 
 			recorder.setPreviewDisplay(holder.getSurface());
-			recorder.setOutputFile(new File(Environment
-					.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "vid_"
-					+ new Date().getTime() + ".3gp").getAbsolutePath());
+			recorder.setOutputFile(getOutputMediaFile().getAbsolutePath());
 
 			try {
 				recorder.prepare();
@@ -119,5 +117,27 @@ public class RekodaActivity extends Activity {
 			return true;
 		}
 		return false;
+	}
+
+	/** Create a File for saving video */
+	private static File getOutputMediaFile(){
+		// To be safe, you should check that the SDCard is mounted
+		// using Environment.getExternalStorageState() before doing this.
+
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+				Environment.DIRECTORY_MOVIES), "Rekoda");
+
+		// Create the storage directory if it does not exist
+		if (! mediaStorageDir.exists()){
+			if (! mediaStorageDir.mkdirs()){
+				Log.d("Rekoda", "failed to create directory");
+				return null;
+			}
+		}
+
+		// Create a media file name
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+		return new File(mediaStorageDir.getPath() + File.separator +
+				"VID_"+ timeStamp + ".mp4");
 	}
 }
