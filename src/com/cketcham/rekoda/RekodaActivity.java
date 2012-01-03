@@ -25,6 +25,22 @@ import java.util.Date;
 public class RekodaActivity extends Activity {
 	private static final String TAG = "Rekoda";
 
+	/**
+	 * No problems during recording
+	 */
+	private static final int STATUS_OK = 0;
+
+	/**
+	 * A problem occurred when trying to create the output file
+	 */
+	private static final int STATUS_FILE_ERROR = 1;
+
+	/**
+	 * The status of recording. Currently it could be {@link #STATUS_OK}
+	 * or {@link #STATUS_FILE_ERROR}
+	 */
+	private int mStatus = STATUS_OK;
+
 	MediaRecorder recorder;
 	SurfaceHolder holder;
 	// private WakeLock wl;
@@ -33,7 +49,10 @@ public class RekodaActivity extends Activity {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (stopRecorder())
+			if(mStatus == STATUS_FILE_ERROR) {
+				Toast.makeText(RekodaActivity.this, "file error", Toast.LENGTH_SHORT).show();
+				mStatus = STATUS_OK;
+			} else if (stopRecorder())
 				Toast.makeText(RekodaActivity.this, "stopped", Toast.LENGTH_SHORT).show();
 			Log.d(TAG, "stop");
 		}
@@ -86,6 +105,13 @@ public class RekodaActivity extends Activity {
 	private void startRecorder() {
 		if (recorder == null) {
 
+			File file = getOutputMediaFile();
+			if (file == null) {
+				mStatus = STATUS_FILE_ERROR;
+				recorder = null;
+				return;
+			}
+
 			recorder = new MediaRecorder();
 			recorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
 			recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
@@ -94,7 +120,7 @@ public class RekodaActivity extends Activity {
 			recorder.setProfile(cpHigh);
 
 			recorder.setPreviewDisplay(holder.getSurface());
-			recorder.setOutputFile(getOutputMediaFile().getAbsolutePath());
+			recorder.setOutputFile(file.getAbsolutePath());
 
 			try {
 				recorder.prepare();
