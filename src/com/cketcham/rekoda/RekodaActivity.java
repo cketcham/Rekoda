@@ -107,6 +107,8 @@ public class RekodaActivity extends Activity {
 		super.onDestroy();
 
 		// wl.release();
+		Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		v.vibrate(100);
 
 		Log.d(TAG, "unregister");
 		unregisterReceiver(start);
