@@ -10,6 +10,7 @@ import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -51,7 +52,7 @@ public class RekodaActivity extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			if(mStatus == STATUS_FILE_ERROR) {
 				Toast.makeText(RekodaActivity.this, "file error", Toast.LENGTH_SHORT).show();
-				mStatus = STATUS_OK;
+				setStatus(STATUS_OK);
 			} else if (stopRecorder())
 				Toast.makeText(RekodaActivity.this, "stopped", Toast.LENGTH_SHORT).show();
 			Log.d(TAG, "stop");
@@ -107,7 +108,7 @@ public class RekodaActivity extends Activity {
 
 			File file = getOutputMediaFile();
 			if (file == null) {
-				mStatus = STATUS_FILE_ERROR;
+				setStatus(STATUS_FILE_ERROR);
 				recorder = null;
 				return;
 			}
@@ -165,5 +166,18 @@ public class RekodaActivity extends Activity {
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		return new File(mediaStorageDir.getPath() + File.separator +
 				"VID_"+ timeStamp + ".mp4");
+	}
+
+	/**
+	 * Sets the status for recording the video. Will vibrate for a short duration if status
+	 * is an error
+	 * @param status
+	 */
+	private void setStatus(int status) {
+		if(mStatus == STATUS_OK && status != STATUS_OK) {
+			Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+			v.vibrate(100);
+		}
+		mStatus = status;
 	}
 }
