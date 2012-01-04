@@ -37,8 +37,13 @@ public class RekodaActivity extends Activity {
 	private static final int STATUS_FILE_ERROR = 1;
 
 	/**
-	 * The status of recording. Currently it could be {@link #STATUS_OK}
-	 * or {@link #STATUS_FILE_ERROR}
+	 * A problem occurred when trying to start recording
+	 */
+	private static final int STATUS_START_ERROR = 2;
+
+	/**
+	 * The status of recording. Currently it could be {@link #STATUS_OK},
+	 * {@link #STATUS_FILE_ERROR} or {@link #STATUS_START_ERROR}
 	 */
 	private int mStatus = STATUS_OK;
 
@@ -50,11 +55,16 @@ public class RekodaActivity extends Activity {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if(mStatus == STATUS_FILE_ERROR) {
-				Toast.makeText(RekodaActivity.this, "file error", Toast.LENGTH_SHORT).show();
-				setStatus(STATUS_OK);
-			} else if (stopRecorder())
-				Toast.makeText(RekodaActivity.this, "stopped", Toast.LENGTH_SHORT).show();
+			String response = "unknown error";
+			if(mStatus == STATUS_FILE_ERROR)
+				response = "file error";
+			else if(mStatus == STATUS_START_ERROR)
+				response = "start error";
+			else if (stopRecorder())
+				response = "stopped";
+
+			setStatus(STATUS_OK);
+			Toast.makeText(RekodaActivity.this, response, Toast.LENGTH_SHORT).show();
 			Log.d(TAG, "stop");
 		}
 	};
@@ -101,6 +111,12 @@ public class RekodaActivity extends Activity {
 		Log.d(TAG, "unregister");
 		unregisterReceiver(start);
 		unregisterReceiver(stop);
+
+		if(recorder != null) {
+			recorder.stop();
+			recorder.release();
+			recorder = null;
+		}
 	}
 
 	private void startRecorder() {
@@ -128,9 +144,11 @@ public class RekodaActivity extends Activity {
 				recorder.start();
 			} catch (IllegalStateException e) {
 				e.printStackTrace();
+				setStatus(STATUS_START_ERROR);
 				finish();
 			} catch (IOException e) {
 				e.printStackTrace();
+				setStatus(STATUS_START_ERROR);
 				finish();
 			}
 		}
