@@ -10,6 +10,8 @@ import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -49,7 +51,7 @@ public class RekodaActivity extends Activity {
 
 	MediaRecorder recorder;
 	SurfaceHolder holder;
-	// private WakeLock wl;
+	private WakeLock wl;
 
 	private final BroadcastReceiver stop = new BroadcastReceiver() {
 
@@ -82,12 +84,10 @@ public class RekodaActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		//
-		// PowerManager pm =
-		// (PowerManager)getSystemService(Context.POWER_SERVICE);
-		// wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-		// wl.acquire();
-		//
+		PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		wl.acquire();
+
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -106,7 +106,6 @@ public class RekodaActivity extends Activity {
 	public void onDestroy() {
 		super.onDestroy();
 
-		// wl.release();
 		Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 		v.vibrate(100);
 
@@ -119,6 +118,8 @@ public class RekodaActivity extends Activity {
 			recorder.release();
 			recorder = null;
 		}
+
+		wl.release();
 	}
 
 	private void startRecorder() {
