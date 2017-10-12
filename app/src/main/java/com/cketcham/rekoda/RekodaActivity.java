@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -16,8 +17,8 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import java.io.File;
@@ -89,14 +90,20 @@ public class RekodaActivity extends Activity {
 		wl.acquire();
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		setContentView(R.layout.camera_layout);
 
 		SurfaceView cameraView = (SurfaceView) findViewById(R.id.camera_view);
 		holder = cameraView.getHolder();
 		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+		findViewById(android.R.id.content).setBackgroundColor(Color.BLACK);
+		findViewById(android.R.id.content).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				startRecorder();
+			}
+		});
 
 		registerReceiver(start, new IntentFilter(Intent.ACTION_SCREEN_OFF));
 		registerReceiver(stop, new IntentFilter(Intent.ACTION_SCREEN_ON));
@@ -124,6 +131,7 @@ public class RekodaActivity extends Activity {
 
 	private void startRecorder() {
 		if (recorder == null) {
+			goFullScreen();
 
 			File file = getOutputMediaFile();
 			if (file == null) {
@@ -155,6 +163,17 @@ public class RekodaActivity extends Activity {
 				finish();
 			}
 		}
+	}
+
+	private void goFullScreen() {
+		View decorView = getWindow().getDecorView();
+		// Hide both the navigation bar and the status bar.
+		// SYSTEM_UI_FLAG_FULLSCREEN is only available on Android 4.1 and higher, but as
+		// a general rule, you should design your app to hide the status bar whenever you
+		// hide the navigation bar.
+		int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+				| View.SYSTEM_UI_FLAG_FULLSCREEN;
+		decorView.setSystemUiVisibility(uiOptions);
 	}
 
 	private boolean stopRecorder() {
